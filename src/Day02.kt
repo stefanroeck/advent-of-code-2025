@@ -1,8 +1,21 @@
+import java.util.function.Predicate
 import kotlin.math.floor
 
 fun main() {
 
-  fun part1(input: List<String>): Long {
+  fun checkInvalidIdPart1(asString: String): Boolean {
+    if (asString.length % 2 == 0) {
+      val half = floor(asString.length / 2.0).toInt()
+      val firstPart = asString.substring(0..<half)
+      val secondPart = asString.substring(half)
+      if (firstPart == secondPart) {
+        return true
+      }
+    }
+    return false
+  }
+
+  fun searchForInvalidIds(input: List<String>, predicate: Predicate<String>): Long {
     val invalidIds = mutableListOf<String>()
 
     val ranges = input.first().split(",")
@@ -12,19 +25,19 @@ fun main() {
 
       LongRange(from, to).forEach { number ->
         val asString = number.toString()
-        if (asString.length % 2 == 0) {
-          val half = floor(asString.length / 2.0).toInt()
-          val firstPart = asString.substring(0..<half)
-          val secondPart = asString.substring(half)
-          if (firstPart == secondPart) {
-            invalidIds.add(asString)
-          }
+        if (predicate.test(asString)) {
+          invalidIds.add(asString)
         }
+
       }
     }
     println(invalidIds)
 
     return invalidIds.sumOf { it.toLong() }
+  }
+
+  fun part1(input: List<String>): Long {
+    return searchForInvalidIds(input, ::checkInvalidIdPart1)
   }
 
   fun part2(input: List<String>): Int {
