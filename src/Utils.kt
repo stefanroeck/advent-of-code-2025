@@ -25,3 +25,9 @@ fun compareAndCheck(actual: Int, expected: Int) {
     println("ERROR! Expected=$expected, Actual=$actual")
   }
 }
+
+fun compareAndCheck(actual: Long, expected: Long) {
+  if (actual != expected) {
+    println("ERROR! Expected=$expected, Actual=$actual")
+  }
+}
