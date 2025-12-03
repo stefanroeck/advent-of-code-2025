@@ -1,14 +1,11 @@
-
-val digits = listOf(9,8,7,6,5,4,3,2,1,0).map { it.toString() }
-
 fun main() {
 
-  fun String.largestDigitPosition(startIndex: Int = 0): Int {
-    digits.forEach { digit ->
-      indexOf(digit, startIndex).let { index ->
+  fun String.largestDigitPosition(startIndex: Int = 0, endingPositionsToIgnore: Int = 0): Int {
+    for (digit in 9 downTo 0) {
+      val stringToInvestigate = dropLast(endingPositionsToIgnore)
+      stringToInvestigate.indexOf(digit.toString(), startIndex).let { index ->
         if (index != -1) {
-          if (startIndex != 0 || index != length - 1)
-            return index
+          return index
         }
       }
     }
@@ -17,20 +14,29 @@ fun main() {
 
   fun part1(input: List<String>): Long {
     return input.filterNot { it.isEmpty() }.map { bank ->
-      val firstDigitPos = bank.largestDigitPosition()
+      val firstDigitPos = bank.largestDigitPosition(0, 1)
       val secondDigitPos = bank.largestDigitPosition(firstDigitPos + 1)
       ("${bank[firstDigitPos]}${bank[secondDigitPos]}").toInt()
     }.sumOf { it.toLong() }
   }
 
   fun part2(input: List<String>): Long {
-    return 0
+    return input.filterNot { it.isEmpty() }.map { bank ->
+      var lastPosition = -1
+      var joltage = ""
+      for (digit in 11 downTo 0) {
+        lastPosition = bank.largestDigitPosition(lastPosition + 1, digit)
+        joltage += bank[lastPosition]
+      }
+      println("bank $bank -> joltage $joltage")
+      joltage.toLong()
+    }.sumOf { it }
   }
 
   compareAndCheck(part1(readInput("Day03_test")), 357)
-  //compareAndCheck(part2(readInput("Day03_test")), 4174379265)
+  compareAndCheck(part2(readInput("Day03_test")), 3121910778619)
 
   val input = readInput("Day03")
   part1(input).println()
-  //part2(input).println()
+  part2(input).println()
 }
