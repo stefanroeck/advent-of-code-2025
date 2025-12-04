@@ -1,25 +1,18 @@
 enum class Direction { Left, Up, Right, Down }
-data class Point(val x: Int, val y: Int) {
-  fun translate(direction: Direction): Point {
-    return when (direction) {
-      Direction.Left -> Point(x - 1, y)
-      Direction.Up -> Point(x, y - 1)
-      Direction.Right -> Point(x + 1, y)
-      Direction.Down -> Point(x, y + 1)
-    }
-  }
-}
+data class Point(val x: Int, val y: Int)
 
-class MapOfThings(private val input: List<String>, private val markerChar: Char) {
+class MapOfThings(input: List<String>, private val markerChar: Char) {
+
+  private val data = input.toMutableList()
 
   fun hasMarker(point: Point): Boolean {
-    return input.get(point.y).get(point.x) == markerChar
+    return data.get(point.y).get(point.x) == markerChar
   }
 
-  fun width() = input.get(0).length
-  fun height() = input.size
+  fun width() = data[0].length
+  fun height() = data.size
 
-  fun allPoints(): MutableList<Point> {
+  fun allPoints(): List<Point> {
     val result = mutableListOf<Point>()
     for (x in 0..<width()) {
       for (y in 0..<height()) {
@@ -43,6 +36,15 @@ class MapOfThings(private val input: List<String>, private val markerChar: Char)
     }
     return result.filter { it.x in (0..<width()) && it.y in (0..<height()) }
   }
+
+  fun adjacentMarkers(point: Point) = adjacentPoints(point).filter { hasMarker(it) }
+
+  fun clearMarkerAt(point: Point) {
+    check(hasMarker(point)) { "No marker at point" }
+    data[point.y] = data[point.y].replaceRange(point.x..point.x, ".")
+  }
+
+  fun markerCount() = allPoints().filter(::hasMarker).size
 }
 
 fun main() {
@@ -51,11 +53,8 @@ fun main() {
     val pointsToRemove = mutableListOf<Point>()
     with(MapOfThings(input, '@')) {
       allPoints().forEach { point ->
-        if (hasMarker(point)) {
-          val adjacentMarkers = adjacentPoints(point).count { hasMarker(it) }
-          if (adjacentMarkers < 4) {
-            pointsToRemove.add(point)
-          }
+        if (hasMarker(point) && adjacentMarkers(point).size < 4) {
+          pointsToRemove.add(point)
         }
       }
     }
@@ -63,13 +62,30 @@ fun main() {
   }
 
   fun part2(input: List<String>): Long {
-    return 0
+    var removedCount: Long = 0
+    with(MapOfThings(input, '@')) {
+      var remainingMarkerCount = markerCount()
+
+      while (true) {
+        allPoints().forEach { point ->
+          if (hasMarker(point) && adjacentMarkers(point).size < 4) {
+            clearMarkerAt(point)
+            removedCount++
+          }
+        }
+
+        if (markerCount() == remainingMarkerCount) break
+        remainingMarkerCount = markerCount()
+      }
+
+    }
+    return removedCount
   }
 
   compareAndCheck(part1(readInput("Day04_test")), 13)
-  //compareAndCheck(part2(readInput("Day04_test")), 1)
+  compareAndCheck(part2(readInput("Day04_test")), 43)
 
   val input = readInput("Day04")
   part1(input).println()
-  //part2(input).println()
+  part2(input).println()
 }
