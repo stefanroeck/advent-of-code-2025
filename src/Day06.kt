@@ -3,7 +3,7 @@ fun main() {
   fun List<Long>.product() = fold(1.toLong()) { p, n -> p * n }
 
   fun part1(input: List<String>): Long {
-    val columns = MapOfPoints(input).columns()
+    val columns = MapOfPoints(input).columns
 
     return columns.fold(0.toLong()) { sum, column ->
       val operator = column.last()
