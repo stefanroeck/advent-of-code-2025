@@ -1,11 +1,20 @@
-class MapOfPoints(input: List<String>, colDelimiter: String = " ") {
+import kotlin.math.max
+import kotlin.math.min
 
-  private val data: List<ValuePoint> = input.flatMapIndexed { y, line ->
+class MapOfPoints(private val data: List<ValuePoint>) {
+
+  constructor(width: Int, height: Int, value: String) : this((0..<width).flatMap { x ->
+    (0..<height).map { y -> ValuePoint(x, y, value) }
+  })
+
+  constructor(input: List<String>, colDelimiter: String = " ") : this(input.flatMapIndexed { y, line ->
     line
       .split(colDelimiter)
       .filter { it.isNotBlank() }
       .mapIndexed { x, token -> ValuePoint(x, y, token) }
   }
+  )
+
 
   val columns = data.groupBy { it.x }.map { it.value }
   val rows = data.groupBy { it.y }.map { it.value }
@@ -42,6 +51,32 @@ class MapOfPoints(input: List<String>, colDelimiter: String = " ") {
     return result.filter(predicate)
   }
 
+  fun print() {
+    rows.map { row ->
+      println(row.joinToString("") { it.value })
+    }
+  }
+
+  fun pointsBetween(first: ValuePoint, second: ValuePoint): List<ValuePoint> {
+    return (min(first.x, second.x)..max(first.x, second.x)).flatMap { x ->
+      (min(first.y, second.y)..max(first.y, second.y)).map { y -> pointAt(x, y)!! }
+    }
+  }
+
+
+  fun connectedPoints(start: ValuePoint, withValue: String): List<ValuePoint> {
+    val connectedPoints = mutableSetOf<ValuePoint>()
+    val pointsToCheck = mutableListOf(start)
+    while (pointsToCheck.isNotEmpty()) {
+      val point = pointsToCheck.first()
+      pointsToCheck.remove(point)
+      if (point.value == withValue) {
+        connectedPoints.add(point)
+        pointsToCheck.addAll(adjacentPoints(point) { it.value == withValue && !connectedPoints.contains(it) })
+      }
+    }
+    return connectedPoints.toList()
+  }
 }
 
 data class ValuePoint(val x: Int, val y: Int, var value: String)
